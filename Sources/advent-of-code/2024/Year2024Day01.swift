@@ -1,9 +1,91 @@
-import Foundation
+//
+//  Year2024Day01.swift
+//  advent-of-code
+//
+//  Created by cdann on 12/12/24.
+//
+
+import ArgumentParser
 import Parsing
 
-// Day 1
+struct Year2024Day1: ParsableCommand {
+  static let configuration = CommandConfiguration(
+    commandName: "1",
+    abstract: "Day 1 Challenge",
+    shouldDisplay: true,
+    aliases: ["Day1"]
+  )
+  
+  @OptionGroup var input: InputFileArgument
 
-let input = """
+  mutating func run() throws {
+    let input = try self.input.getInput() ?? Self.defaultInput
+    let locationPairs = try LocationPairListParser().parse(input)
+
+    // Part 1
+
+    let firstList = locationPairs.map(\.first).sorted(by: <)
+    let secondList = locationPairs.map(\.second).sorted(by: <)
+
+    let distance = zip(firstList, secondList)
+      .map { abs($1 - $0) }
+      .reduce(0, +)
+
+    print("Distance is \(distance)")
+
+    // Part 2
+
+    let index = secondList.reduce(into: [Int: Int]()) { (result, value) in
+      if let count = result[value] {
+        result[value] = count + 1
+      } else {
+        result[value] = 1
+      }
+    }
+
+    let similarity = firstList.reduce(0) { (result, value) in
+      if let count = index[value] {
+        return result + value * count
+      }
+      else {
+        return result
+      }
+    }
+
+    print("Similarity is \(similarity)")
+
+  }
+
+  // MARK: - Models
+  struct Pair {
+    let first: Int
+    let second: Int
+  }
+
+  // MARK: - Parsers
+  struct LocationPairParser: Parser {
+    var body: some Parser<Substring, Pair> {
+      Parse(Pair.init) {
+        Whitespace()
+        Int.parser()
+        Whitespace()
+        Int.parser()
+      }
+    }
+  }
+
+  struct LocationPairListParser: Parser {
+    var body: some Parser<Substring, [Pair]> {
+      Many {
+        LocationPairParser()
+      } separator: {
+        "\n"
+      }
+    }
+  }
+
+  // MARK: - Default Input
+  static let defaultInput = """
   27636   67663
   92436   51410
   68957   77912
@@ -1005,63 +1087,4 @@ let input = """
   74434   46710
   21991   30826
 """
-
-struct Pair {
-  let first: Int
-  let second: Int
 }
-
-struct LocationPairParser: Parser {
-  var body: some Parser<Substring, Pair> {
-    Parse(Pair.init) {
-      Whitespace()
-      Int.parser()
-      Whitespace()
-      Int.parser()
-    }
-  }
-}
-
-struct LocationPairListParser: Parser {
-  var body: some Parser<Substring, [Pair]> {
-    Many {
-      LocationPairParser()
-    } separator: {
-      "\n"
-    }
-  }
-}
-
-let locationPairs = LocationPairListParser().parse(input)
-
-// Part 1
-
-let firstList = locationPairs.map(\.first).sorted(by: <)
-let secondList = locationPairs.map(\.second).sorted(by: <)
-
-let distance = zip(firstList, secondList)
-  .map { abs($1 - $0) }
-  .reduce(0, +)
-
-print("Distance is \(distance)")
-
-// Part 2
-
-let index = secondList.reduce(into: [Int: Int]()) { (result, value) in
-  if let count = result[value] {
-    result[value] = count + 1
-  } else {
-    result[value] = 1
-  }
-}
-
-let similarity = firstList.reduce(0) { (result, value) in
-  if let count = index[value] {
-    return result + value * count
-  }
-  else {
-    return result
-  }
-}
-
-print("Similarity is \(similarity)")

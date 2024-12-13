@@ -1,9 +1,151 @@
-//: [Previous](@previous)
+//
+//  Year2024Day04.swift
+//  advent-of-code
+//
+//  Created by cdann on 12/12/24.
+//
 
-import Algorithms
-import Foundation
+import ArgumentParser
+import Parsing
 
-let input = """
+struct Year2024Day4: ParsableCommand {
+  static let configuration = CommandConfiguration(
+    commandName: "4",
+    abstract: "Day 4 Challenge",
+    shouldDisplay: true,
+    aliases: ["Day4"]
+  )
+  
+  @OptionGroup var input: InputFileArgument
+
+  mutating func run() throws {
+    let input = try self.input.getInput() ?? Self.defaultInput
+    let puzzle = input.split(separator: "\n", omittingEmptySubsequences: true).map(Array.init)
+
+    let count = Year2024Day4.findMatches("XMAS", in: puzzle)
+    print("Part 1 answer: \(count)")
+
+    let count2 = Year2024Day4.findMatchesPart2(in: puzzle)
+    print("Part 2 answer: \(count2)")
+  }
+
+  static func convolve2D(input: [[Character]], kernel: [[Character]]) -> Int {
+    let inputRows = input.count
+    let inputCols = input[0].count
+    let kernelRows = kernel.count
+    let kernelCols = kernel[0].count
+
+    let kernelChars = kernel.reduce(0) { kernelCount, line in
+      kernelCount + line.reduce(0) { lineCount, char in
+        lineCount + (char == "." ? 0 : 1)
+      }
+    }
+    
+    var kernelMatches = 0
+
+    // Perform convolution
+    for i in 0..<(inputRows - kernelRows + 1) {
+      for j in 0..<(inputCols - kernelCols + 1) {
+        var charMatches = 0
+        for m in 0..<kernelRows {
+          for n in 0..<kernelCols {
+            if kernel[m][n] != "." {
+              charMatches += (input[i + m][j + n] == kernel[m][n] ? 1 : 0)
+            }
+          }
+        }
+        if charMatches == kernelChars {
+          kernelMatches += 1
+        }
+      }
+    }
+    
+    return kernelMatches
+  }
+
+  static func horzKernel(_ query: [Character]) -> [[Character]] {
+    [query]
+  }
+
+  static func vertKernel(_ query: [Character]) -> [[Character]] {
+    query.map { [$0] }
+  }
+
+  static func diagonalDownKernel(_ query: [Character]) -> [[Character]] {
+    var output = Array.init(
+      repeating: Array<Character>.init(repeating: ".", count: query.count),
+      count: query.count
+    )
+    for (index, char) in query.enumerated() {
+      output[index][index] = char
+    }
+    return output
+  }
+
+  static func diagonalUpKernel(_ query: [Character]) -> [[Character]] {
+    var output = Array.init(
+      repeating: Array<Character>.init(repeating: ".", count: query.count),
+      count: query.count
+    )
+    for (index, char) in query.enumerated() {
+      output[index][query.count - index - 1] = char
+    }
+    return output
+  }
+
+  static func findMatches(_ query: String, in puzzle: [[Character]]) -> Int {
+    let queryChars = Array(query)
+    let kernels = [
+      horzKernel(queryChars),
+      horzKernel(queryChars.reversed()),
+      vertKernel(queryChars),
+      vertKernel(queryChars.reversed()),
+      diagonalUpKernel(queryChars),
+      diagonalUpKernel(queryChars.reversed()),
+      diagonalDownKernel(queryChars),
+      diagonalDownKernel(queryChars.reversed()),
+    ]
+
+    var count = 0
+    for kernel in kernels {
+      count += Year2024Day4.convolve2D(input: puzzle, kernel: kernel)
+    }
+    return count
+  }
+
+  static func findMatchesPart2(in puzzle: [[Character]]) -> Int {
+    let kernels: [[[Character]]] = [
+      [
+        Array("M.M"),
+        Array(".A."),
+        Array("S.S")
+      ],
+      [
+        Array("S.S"),
+        Array(".A."),
+        Array("M.M")
+      ],
+      [
+        Array("S.M"),
+        Array(".A."),
+        Array("S.M")
+      ],
+      [
+        Array("M.S"),
+        Array(".A."),
+        Array("M.S")
+      ]
+    ]
+    
+    var count = 0
+    for kernel in kernels {
+      count += Self.convolve2D(input: puzzle, kernel: kernel)
+    }
+    return count
+  }
+
+  // MARK: - Default Input
+  static let defaultInput = """
 SSSXMASAMSSSSSSXMASXMASXXMXMAXSSMSSXXSMMSXMMSMMMMMAXSSMMXMAMAMSMXXSMSSMXXMAMMXSMMSXMAMAMXSMMMSMSAMXXMSMXMXSAAXMSMMXSSMSASMXMSAMXXXMMASXXMSSM
 AMMAMXXAXAXAAAXAMASXMAXMSMSSSMAXMASMMMAAMMSSMAAMASXXXAXXXMAXAXAMMXMXAAMSASXMSXMAASMMSSXMASAAXMAMXSAXMASAMMMASXMAAXMXAASAMXAMMMMSSSMSAMXAAAAS
 MMSSMMSSMXSMSMSMMASAMXSXAAAAAMMMMAXXAXMMSASASMMSAXMASXMMSMMSMSAMSAMMMAMSAXMASAMMMSAAAMAMASMMXMAMAXAASXSMSXXSMASMSMASMMMMMSMSAAMAAAMMAMSSMSSM
@@ -145,128 +287,4 @@ MAMASMMSAMMMSSSSSSSSSMAMMMMAXASXMMMMMSMSMSSSMAMMMSMAMAMMSMSXSASMSMMAAAAAAXASAMAS
 SAMASAXMXSMAAMMXAAAASMAMAAMXSAMXAAMAAAXMAAAAMXSAAXSASMSAAMAAMXMASASMXMASXSMMASMMXMAMSAMXXMAMSASAMXAAMMMSMMSXMASAMXMXMASAAAAMASXSXAAAAAAAMASA
 SXSXSXMASMMMXSAMMMMMMSASXSXMAXMXSXSMSSSMMMSMMMSMXMAMXXMMSSMXMXMSMXAAXMAMAXXSMMMMXSSMMAXXSSXMASMXMASASXXMAXSAMXMASMXXSXMMSSMSXAMMASMSSMMMSSMA
 """
-
-let puzzle = input.split(separator: "\n", omittingEmptySubsequences: true).map(Array.init)
-
-func convolve2D(input: [[Character]], kernel: [[Character]]) -> Int {
-  let inputRows = input.count
-  let inputCols = input[0].count
-  let kernelRows = kernel.count
-  let kernelCols = kernel[0].count
-
-  let kernelChars = kernel.reduce(0) { kernelCount, line in
-    kernelCount + line.reduce(0) { lineCount, char in
-      lineCount + (char == "." ? 0 : 1)
-    }
-  }
-  
-  var kernelMatches = 0
-
-  // Perform convolution
-  for i in 0..<(inputRows - kernelRows + 1) {
-    for j in 0..<(inputCols - kernelCols + 1) {
-      var charMatches = 0
-      for m in 0..<kernelRows {
-        for n in 0..<kernelCols {
-          if kernel[m][n] != "." {
-            charMatches += (input[i + m][j + n] == kernel[m][n] ? 1 : 0)
-          }
-        }
-      }
-      if charMatches == kernelChars {
-        kernelMatches += 1
-      }
-    }
-  }
-  
-  return kernelMatches
 }
-
-func horzKernel(_ query: [Character]) -> [[Character]] {
-  [query]
-}
-
-func vertKernel(_ query: [Character]) -> [[Character]] {
-  query.map { [$0] }
-}
-
-func diagonalDownKernel(_ query: [Character]) -> [[Character]] {
-  var output = Array.init(
-    repeating: Array<Character>.init(repeating: ".", count: query.count),
-    count: query.count
-  )
-  for (index, char) in query.enumerated() {
-    output[index][index] = char
-  }
-  return output
-}
-
-func diagonalUpKernel(_ query: [Character]) -> [[Character]] {
-  var output = Array.init(
-    repeating: Array<Character>.init(repeating: ".", count: query.count),
-    count: query.count
-  )
-  for (index, char) in query.enumerated() {
-    output[index][query.count - index - 1] = char
-  }
-  return output
-}
-
-func findMatches(_ query: String, in puzzle: [[Character]]) -> Int {
-  let queryChars = Array(query)
-  let kernels = [
-    horzKernel(queryChars),
-    horzKernel(queryChars.reversed()),
-    vertKernel(queryChars),
-    vertKernel(queryChars.reversed()),
-    diagonalUpKernel(queryChars),
-    diagonalUpKernel(queryChars.reversed()),
-    diagonalDownKernel(queryChars),
-    diagonalDownKernel(queryChars.reversed()),
-  ]
-
-  var count = 0
-  for kernel in kernels {
-    count += convolve2D(input: puzzle, kernel: kernel)
-  }
-  return count
-}
-
-let count = findMatches("XMAS", in: puzzle)
-print("Part 1 answer: \(count)")
-
-func findMatchesPart2(in puzzle: [[Character]]) -> Int {
-  let kernels = [
-    [
-      Array("M.M"),
-      Array(".A."),
-      Array("S.S"),
-    ],
-    [
-      Array("S.S"),
-      Array(".A."),
-      Array("M.M"),
-    ],
-    [
-      Array("S.M"),
-      Array(".A."),
-      Array("S.M"),
-    ],
-    [
-      Array("M.S"),
-      Array(".A."),
-      Array("M.S"),
-    ],
-  ]
-  
-  var count = 0
-  for kernel in kernels {
-    count += convolve2D(input: puzzle, kernel: kernel)
-  }
-  return count
-}
-
-let count2 = findMatchesPart2(in: puzzle)
-print("Part 2 answer: \(count2)")
-
-//: [Next](@next)

@@ -25,7 +25,8 @@
 
 /* Begin PBXFileReference section */
 		34430EA72CFD7FD0000893B9 /* libPlaygroundDependencies.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPlaygroundDependencies.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		34EF8F892CFD6CBE005B547A /* Playground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = Playground.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		34E1FB972D02A23500CEC85F /* 2015.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = 2015.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		34EF8F892CFD6CBE005B547A /* 2024.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = 2024.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -59,7 +60,8 @@
 		34EF8F812CFD6C7B005B547A = {
 			isa = PBXGroup;
 			children = (
-				34EF8F892CFD6CBE005B547A /* Playground.playground */,
+				34E1FB972D02A23500CEC85F /* 2015.playground */,
+				34EF8F892CFD6CBE005B547A /* 2024.playground */,
 				34430EA82CFD7FD0000893B9 /* PlaygroundDependencies */,
 				34430EAE2CFD805D000893B9 /* Frameworks */,
 				34EF8F8F2CFD7719005B547A /* Products */,
@@ -116,7 +118,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 34EF8F852CFD6C7B005B547A /* Build configuration list for PBXProject "AdventOfCode2024" */;
+			buildConfigurationList = 34EF8F852CFD6C7B005B547A /* Build configuration list for PBXProject "AdventOfCode" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -211,8 +213,11 @@
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = NO;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -274,8 +279,11 @@
 				MTL_FAST_MATH = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = NO;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -307,7 +315,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		34EF8F852CFD6C7B005B547A /* Build configuration list for PBXProject "AdventOfCode2024" */ = {
+		34EF8F852CFD6C7B005B547A /* Build configuration list for PBXProject "AdventOfCode" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				34EF8F862CFD6C7B005B547A /* Debug */,

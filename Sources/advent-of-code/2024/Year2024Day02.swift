@@ -1,12 +1,128 @@
-//: [Previous](@previous)
+//
+//  Year2024Day02.swift
+//  advent-of-code
+//
+//  Created by cdann on 12/12/24.
+//
 
-import Algorithms
-import Foundation
+import ArgumentParser
 import Parsing
 
-// Day 2
+struct Year2024Day2: ParsableCommand {
+  static let configuration = CommandConfiguration(
+    commandName: "2",
+    abstract: "Day 2 Challenge",
+    shouldDisplay: true,
+    aliases: ["Day2"]
+  )
+  
+  @OptionGroup var input: InputFileArgument
 
-let input = """
+  mutating func run() throws {
+    let input = try self.input.getInput() ?? Self.defaultInput
+    
+    let reports = try ReportListParser().parse(input)
+    let safeReportCount = reports.filter(isReportSafe).count
+    print("Part 1 - Safe reports: \(safeReportCount)")
+
+    let safeWithDampeningReportCount = reports.filter(isReportSafeWithDampening).count
+    print("Part 2 - Safe reports with dampening: \(safeWithDampeningReportCount)")
+  }
+
+  // MARK: - Models
+  enum LevelDeltaDirection {
+    case decreasing
+    case increasing
+    case unknown
+  }
+
+  struct State {
+    var direction: LevelDeltaDirection = .unknown
+    var previous: Int?
+  }
+
+  func isReportSafe(_ report: [Int]) -> Bool {
+    var state = State()
+    for level in report {
+      if let previous = state.previous {
+        switch state.direction {
+          case .decreasing:
+            if level >= previous || previous - level > 3 {
+              return false
+            }
+            else {
+              state.previous = level
+            }
+          case .increasing:
+            if level <= previous || level - previous > 3 {
+              return false
+            }
+            else {
+              state.previous = level
+            }
+        case .unknown:
+          guard level != previous else {
+            return false
+          }
+          if level > previous {
+            guard level - previous <= 3 else {
+              return false
+            }
+            state.direction = .increasing
+          } else {
+            guard previous - level <= 3 else {
+              return false
+            }
+            state.direction = .decreasing
+          }
+          state.previous = level
+        }
+      } else {
+        state.previous = level
+      }
+    }
+    return true
+  }
+
+  func isReportSafeWithDampening(_ report: [Int]) -> Bool {
+    guard !isReportSafe(report) else { return true }
+    
+    for i in 0..<report.count {
+      let dampedReport = report.enumerated()
+        .filter { $0.0 != i }
+        .map(\.1)
+      
+      if isReportSafe(Array(dampedReport)) {
+        return true
+      }
+    }
+    
+    return false
+  }
+
+  // MARK: - Parsers
+  struct ReportParser: Parser {
+    var body: some Parser<Substring, [Int]> {
+      Many {
+        Int.parser()
+      } separator: {
+        " "
+      }
+    }
+  }
+
+  struct ReportListParser: Parser {
+    var body: some Parser<Substring, [[Int]]> {
+      Many {
+        ReportParser()
+      } separator: {
+        "\n"
+      }
+    }
+  }
+
+  // MARK: - Default Input
+  static let defaultInput = """
 1 3 5 6 8 9 12 9
 66 67 70 72 73 74 75 75
 18 20 22 25 28 31 35
@@ -1008,104 +1124,4 @@ let input = """
 60 59 56 55 54 52 51
 46 47 50 53 54 57 59 61
 """
-
-struct ReportParser: Parser {
-  var body: some Parser<Substring, [Int]> {
-    Many {
-      Int.parser()
-    } separator: {
-      " "
-    }
-  }
 }
-
-struct ReportListParser: Parser {
-  var body: some Parser<Substring, [[Int]]> {
-    Many {
-      ReportParser()
-    } separator: {
-      "\n"
-    }
-  }
-}
-
-let reports = ReportListParser().parse(input)
-
-enum LevelDeltaDirection {
-  case decreasing
-  case increasing
-  case unknown
-}
-
-struct State {
-  var direction: LevelDeltaDirection = .unknown
-  var previous: Int?
-}
-
-func isReportSafe(_ report: [Int]) -> Bool {
-  var state = State()
-  for level in report {
-    if let previous = state.previous {
-      switch state.direction {
-        case .decreasing:
-          if level >= previous || previous - level > 3 {
-            return false
-          }
-          else {
-            state.previous = level
-          }
-        case .increasing:
-          if level <= previous || level - previous > 3 {
-            return false
-          }
-          else {
-            state.previous = level
-          }
-      case .unknown:
-        guard level != previous else {
-          return false
-        }
-        if level > previous {
-          guard level - previous <= 3 else {
-            return false
-          }
-          state.direction = .increasing
-        } else {
-          guard previous - level <= 3 else {
-            return false
-          }
-          state.direction = .decreasing
-        }
-        state.previous = level
-      }
-    } else {
-      state.previous = level
-    }
-  }
-  return true
-}
-
-let safeReportCount = reports.filter(isReportSafe).count
-print("Safe reports: \(safeReportCount)")
-
-func isReportSafeWithDampening(_ report: [Int]) -> Bool {
-  guard !isReportSafe(report) else { return true }
-  
-  for i in 0..<report.count {
-    let dampedReport = report.enumerated()
-      .filter { $0.0 != i }
-      .map(\.1)
-    
-    if isReportSafe(Array(dampedReport)) {
-      return true
-    }
-  }
-  
-  return false
-}
-
-let safeWithDampeningReportCount = reports.filter(isReportSafeWithDampening).count
-print("Safe reports with dampening: \(safeWithDampeningReportCount)")
-
-//: [Next](@next)
-
